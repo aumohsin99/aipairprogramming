@@ -1,17 +1,52 @@
 // create web server
-// load express module
-const express = require('express');
-const app = express();
-const port = 3000;
 
-// load body-parser module
-const bodyParser = require('body-parser');
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
-// parse application/json
-app.use(bodyParser.json());
+var express = require('express');
+var app = express();
 
-// load express-handlebars module
-const exphbs = require('express-handlebars');
-app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
+// set up handlebars view engine
+var handlebars = require('express3-handlebars')
+		.create({ defaultLayout:'main' });
+app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
+
+// set port
+app.set('port', process.env.PORT || 3000);
+
+// static middleware
+app.use(express.static(__dirname + '/public'));
+
+// routes
+app.get('/', function(req, res) {
+	res.render('home');
+});
+
+app.get('/about', function(req, res) {
+	res.render('about');
+});
+
+app.get('/contact', function(req, res) {
+	res.render('contact', { csrf: 'CSRF token goes here' });
+});
+
+app.get('/thankyou', function(req, res) {
+	res.render('thankyou');
+});
+
+// 404 catch-all handler (middleware)
+app.use(function(req, res, next) {
+	res.status(404);
+	res.render('404');
+});
+
+// 500 error handler (middleware)
+app.use(function(err, req, res, next) {
+	console.error(err.stack);
+	res.status(500);
+	res.render('500');
+});
+
+// start web server
+app.listen(app.get('port'), function() {
+	console.log('Express started on http://localhost:' +
+			app.get('port') + '; press Ctrl-C to terminate.');
+});
